@@ -4,73 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sharp Edge Barbers | London</title>
+
 <style>
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #f5f5f5;
     color: #333;
 }
 
-header {
-    background-color: #111;
+.hero {
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+    url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438');
+    background-size: cover;
+    background-position: center;
     color: white;
-    padding: 40px 20px;
     text-align: center;
+    padding: 100px 20px;
 }
 
-header h1 {
+.hero h1 {
+    font-size: 48px;
     margin: 0;
-    font-size: 40px;
 }
 
-header p {
-    margin-top: 10px;
-    font-size: 18px;
-    color: #ccc;
+.hero p {
+    font-size: 20px;
+    margin-top: 15px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-section {
-    padding: 50px 20px;
-    max-width: 900px;
+.section {
+    padding: 60px 20px;
+    max-width: 1000px;
     margin: auto;
 }
 
 h2 {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
-.services, .barbers {
+.grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
 }
 
 .card {
     background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     text-align: center;
-}
-
-.card h3 {
-    margin-top: 0;
 }
 
 .button {
     display: inline-block;
-    padding: 12px 25px;
-    background: #111;
+    padding: 14px 28px;
+    background: black;
     color: white;
     text-decoration: none;
-    border-radius: 5px;
-    margin-top: 15px;
+    border-radius: 6px;
+    margin-top: 20px;
 }
 
 .button:hover {
-    background: #444;
+    background: #333;
 }
 
 .contact {
@@ -78,24 +80,43 @@ h2 {
 }
 
 footer {
-    background: #111;
+    background: black;
     color: white;
     text-align: center;
-    padding: 20px;
+    padding: 25px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
+<div class="hero">
     <h1>Sharp Edge Barbers</h1>
-    <p>Premium Cuts & Grooming in Central London</p>
-</header>
+    <p>High-quality haircuts delivered by professionally trained barbers with over 10 years of experience. Precision, style, and confidence — every visit.</p>
+    <a class="button" href="#contact">Book Your Visit</a>
+</div>
 
-<section>
+<div class="section">
+    <h2>Why Choose Us</h2>
+    <div class="grid">
+        <div class="card">
+            <h3>Experienced Barbers</h3>
+            <p>Our team is professionally trained with years of hands-on experience in modern and classic styles.</p>
+        </div>
+        <div class="card">
+            <h3>Premium Service</h3>
+            <p>We focus on detail, cleanliness, and delivering a sharp finish every time.</p>
+        </div>
+        <div class="card">
+            <h3>Central London Location</h3>
+            <p>Conveniently located in Camden, making it easy to pop in for a fresh trim.</p>
+        </div>
+    </div>
+</div>
+
+<div class="section">
     <h2>Our Services</h2>
-    <div class="services">
+    <div class="grid">
         <div class="card">
             <h3>Skin Fade</h3>
             <p>Clean, sharp fades tailored to your style.</p>
@@ -112,14 +133,14 @@ footer {
             <p><strong>£18</strong></p>
         </div>
     </div>
-</section>
+</div>
 
-<section>
+<div class="section">
     <h2>Meet The Barbers</h2>
-    <div class="barbers">
+    <div class="grid">
         <div class="card">
             <h3>James</h3>
-            <p>10+ years experience. Specialist in skin fades and modern styles.</p>
+            <p>Skin fade specialist with over 10 years of experience.</p>
         </div>
         <div class="card">
             <h3>Ahmed</h3>
@@ -127,19 +148,19 @@ footer {
         </div>
         <div class="card">
             <h3>Luca</h3>
-            <p>Creative stylist focused on sharp detail and precision.</p>
+            <p>Creative stylist focused on precision and modern styles.</p>
         </div>
     </div>
-</section>
+</div>
 
-<section class="contact">
+<div class="section contact" id="contact">
     <h2>Visit Us</h2>
     <p><strong>123 Camden High Street, London, NW1 7JR</strong></p>
     <p>Mon – Sat: 9am – 7pm</p>
     <p>Sunday: 10am – 4pm</p>
     <p>Call us: 020 7946 0958</p>
     <a class="button" href="https://www.google.com/maps/search/?api=1&query=123+Camden+High+Street+London+NW1+7JR" target="_blank">View on Google Maps</a>
-</section>
+</div>
 
 <footer>
     © 2026 Sharp Edge Barbers | London
