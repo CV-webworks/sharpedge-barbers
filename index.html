@@ -1,170 +1,814 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sharp Edge Barbers | London</title>
+import { useState, useEffect, useRef, type FormEvent } from 'react';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import {
+  Scissors,
+  Star,
+  MapPin,
+  Clock,
+  Phone,
+  Mail,
+  Send,
+  ChevronDown,
+  Instagram,
+  Menu,
+  X,
+} from 'lucide-react';
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+/* ───────────────────────── helpers ───────────────────────── */
+
+function FadeInWhenVisible({
+  children,
+  delay = 0,
+  direction = 'up',
+  className = '',
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  direction?: 'up' | 'left' | 'right' | 'none';
+  className?: string;
+}) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-60px' });
+
+  const initial: Record<string, number> = { opacity: 0 };
+  if (direction === 'up') initial.y = 60;
+  if (direction === 'left') initial.x = -60;
+  if (direction === 'right') initial.x = 60;
+
+  const animate: Record<string, number> = { opacity: 1, y: 0, x: 0 };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={initial}
+      animate={isInView ? animate : initial}
+      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
-.hero {
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-    url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1600&q=80');
-    background-size: cover;
-    background-position: center;
-    color: white;
-    text-align: center;
-    padding: 100px 20px;
-}
-
-.hero h1 {
-    font-size: 48px;
-    margin: 0;
-}
-
-.hero p {
-    font-size: 20px;
-    margin-top: 15px;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.section {
-    padding: 60px 20px;
-    max-width: 1000px;
-    margin: auto;
-}
-
-h2 {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-}
-
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    text-align: center;
-}
-
-.button {
-    display: inline-block;
-    padding: 14px 28px;
-    background: black;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    margin-top: 20px;
-}
-
-.button:hover {
-    background: #333;
-}
-
-.contact {
-    text-align: center;
-}
-
-footer {
-    background: black;
-    color: white;
-    text-align: center;
-    padding: 25px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="hero">
-    <h1>Sharp Edge Barbers</h1>
-    <p>High-quality haircuts delivered by professionally trained barbers with over 10 years of experience. Precision, style, and confidence — every visit.</p>
-    <a class="button" href="#contact">Book Your Visit</a>
-</div>
-
-<div class="section">
-    <h2>Why Choose Us</h2>
-    <div class="grid">
-        <div class="card">
-            <h3>Experienced Barbers</h3>
-            <p>Our team is professionally trained with years of hands-on experience in modern and classic styles.</p>
-        </div>
-        <div class="card">
-            <h3>Premium Service</h3>
-            <p>We focus on detail, cleanliness, and delivering a sharp finish every time.</p>
-        </div>
-        <div class="card">
-            <h3>Central London Location</h3>
-            <p>Conveniently located in Camden, making it easy to pop in for a fresh trim.</p>
-        </div>
+function GoldDivider() {
+  return (
+    <div className="flex items-center justify-center gap-4 my-2">
+      <div className="gold-line w-16 sm:w-24" />
+      <Scissors className="text-gold w-5 h-5 rotate-90" />
+      <div className="gold-line w-16 sm:w-24" />
     </div>
-</div>
+  );
+}
 
-<div class="section">
-    <h2>Our Services</h2>
-    <div class="grid">
-        <div class="card">
-            <h3>Skin Fade</h3>
-            <p>Clean, sharp fades tailored to your style.</p>
-            <p><strong>£22</strong></p>
+/* ───────────────────────── navbar ───────────────────────── */
+
+function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const links = [
+    { label: 'Home', href: '#hero' },
+    { label: 'Why Us', href: '#why' },
+    { label: 'Services', href: '#services' },
+    { label: 'Team', href: '#team' },
+    { label: 'Contact', href: '#contact' },
+  ];
+
+  return (
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+        scrolled
+          ? 'bg-dark/95 backdrop-blur-md shadow-lg shadow-black/30 py-3'
+          : 'bg-transparent py-5'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-5 flex items-center justify-between">
+        <a href="#hero" className="flex items-center gap-2">
+          <Scissors className="w-6 h-6 text-gold" />
+          <span
+            className="text-xl font-bold tracking-wider"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            SHARP EDGE
+          </span>
+        </a>
+
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-8">
+          {links.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="text-sm tracking-widest uppercase text-gray-300 hover:text-gold transition-colors duration-300"
+            >
+              {l.label}
+            </a>
+          ))}
+          <a
+            href="#contact"
+            className="ml-2 px-5 py-2 border border-gold text-gold text-sm tracking-widest uppercase hover:bg-gold hover:text-dark transition-all duration-300 rounded-sm"
+          >
+            Book Now
+          </a>
         </div>
-        <div class="card">
-            <h3>Haircut & Beard</h3>
-            <p>Precision cut with full beard shaping.</p>
-            <p><strong>£30</strong></p>
+
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden text-white"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden bg-dark/98 backdrop-blur-lg border-t border-dark-border"
+        >
+          <div className="flex flex-col items-center py-6 gap-5">
+            {links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setMobileOpen(false)}
+                className="text-sm tracking-widest uppercase text-gray-300 hover:text-gold transition-colors"
+              >
+                {l.label}
+              </a>
+            ))}
+            <a
+              href="#contact"
+              onClick={() => setMobileOpen(false)}
+              className="px-6 py-2 border border-gold text-gold text-sm tracking-widest uppercase hover:bg-gold hover:text-dark transition-all rounded-sm"
+            >
+              Book Now
+            </a>
+          </div>
+        </motion.div>
+      )}
+    </motion.nav>
+  );
+}
+
+/* ───────────────────────── hero ───────────────────────── */
+
+function Hero() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '40%']);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  return (
+    <section
+      id="hero"
+      ref={ref}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+    >
+      {/* Background image with parallax */}
+      <motion.div style={{ y }} className="absolute inset-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center scale-110"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1920&q=80')",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-dark" />
+      </motion.div>
+
+      {/* Floating gold particles */}
+      {Array.from({ length: 15 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute w-1 h-1 bg-gold/30 rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            bottom: '-10px',
+            animation: `float ${8 + Math.random() * 12}s linear infinite`,
+            animationDelay: `${Math.random() * 10}s`,
+          }}
+        />
+      ))}
+
+      <motion.div style={{ opacity }} className="relative z-10 text-center px-5 max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mb-6"
+        >
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="gold-line w-12" />
+            <span className="text-gold text-xs tracking-[0.35em] uppercase font-medium">
+              Est. 2014 • Camden, London
+            </span>
+            <div className="gold-line w-12" />
+          </div>
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1] mb-6"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Sharp Edge{' '}
+          <span className="gold-shimmer italic">Barbers</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10"
+          style={{ fontFamily: 'var(--font-accent)', fontSize: 'clamp(1rem, 2.5vw, 1.35rem)' }}
+        >
+          High-quality haircuts delivered by professionally trained barbers with over
+          a decade of experience. Precision, style, and confidence — every single visit.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+        >
+          <a
+            href="#contact"
+            className="group relative px-8 py-4 bg-gold text-dark font-semibold text-sm tracking-widest uppercase overflow-hidden rounded-sm transition-all duration-300 hover:shadow-lg hover:shadow-gold/25"
+          >
+            <span className="relative z-10">Book Your Visit</span>
+            <div className="absolute inset-0 bg-gold-light scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+          </a>
+          <a
+            href="#services"
+            className="px-8 py-4 border border-white/20 text-white text-sm tracking-widest uppercase hover:border-gold hover:text-gold transition-all duration-300 rounded-sm"
+          >
+            View Services
+          </a>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            <ChevronDown className="w-6 h-6 text-gold/60" />
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+}
+
+/* ───────────────────────── why choose us ───────────────────────── */
+
+const whyCards = [
+  {
+    icon: <Star className="w-8 h-8" />,
+    title: 'Experienced Barbers',
+    text: "Our team is professionally trained with years of hands-on experience in both modern and classic styles. We don't just cut hair — we craft it.",
+  },
+  {
+    icon: <Scissors className="w-8 h-8" />,
+    title: 'Premium Service',
+    text: 'We focus on every detail, from cleanliness to the final finish. You\'ll leave looking sharper and feeling more confident than when you walked in.',
+  },
+  {
+    icon: <MapPin className="w-8 h-8" />,
+    title: 'Central London Location',
+    text: 'Conveniently situated on Camden High Street, making it effortless to pop in for a fresh trim whether you live or work nearby.',
+  },
+];
+
+function WhySection() {
+  return (
+    <section id="why" className="relative py-24 sm:py-32">
+      <div className="max-w-6xl mx-auto px-5">
+        <FadeInWhenVisible>
+          <div className="text-center mb-16">
+            <span className="text-gold text-xs tracking-[0.3em] uppercase font-medium">
+              The Sharp Edge Difference
+            </span>
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Why Choose Us
+            </h2>
+            <GoldDivider />
+          </div>
+        </FadeInWhenVisible>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {whyCards.map((card, i) => (
+            <FadeInWhenVisible key={i} delay={i * 0.15}>
+              <motion.div
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+                className="group relative bg-dark-card border border-dark-border rounded-lg p-8 text-center hover:border-gold/40 transition-colors duration-500 h-full"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg" />
+                <div className="relative">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-gold/30 text-gold mb-6 group-hover:border-gold group-hover:shadow-lg group-hover:shadow-gold/10 transition-all duration-500">
+                    {card.icon}
+                  </div>
+                  <h3
+                    className="text-xl font-semibold mb-3"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {card.title}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed text-sm">{card.text}</p>
+                </div>
+              </motion.div>
+            </FadeInWhenVisible>
+          ))}
         </div>
-        <div class="card">
-            <h3>Hot Towel Shave</h3>
-            <p>Traditional shave with hot towel finish.</p>
-            <p><strong>£18</strong></p>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── services ───────────────────────── */
+
+const services = [
+  {
+    name: 'Skin Fade',
+    desc: 'Clean, sharp fades meticulously tailored to complement your unique style and face shape.',
+    price: '£22',
+  },
+  {
+    name: 'Haircut & Beard',
+    desc: 'A precision haircut paired with expert full beard shaping for the complete gentleman\'s look.',
+    price: '£30',
+  },
+  {
+    name: 'Hot Towel Shave',
+    desc: 'A luxurious traditional straight-razor shave finished with a soothing hot towel treatment.',
+    price: '£18',
+  },
+];
+
+function ServicesSection() {
+  return (
+    <section id="services" className="relative py-24 sm:py-32">
+      {/* Subtle background texture */}
+      <div className="absolute inset-0 bg-dark-lighter" />
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23C9A96E\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+
+      <div className="relative max-w-6xl mx-auto px-5">
+        <FadeInWhenVisible>
+          <div className="text-center mb-16">
+            <span className="text-gold text-xs tracking-[0.3em] uppercase font-medium">
+              What We Offer
+            </span>
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Our Services
+            </h2>
+            <GoldDivider />
+          </div>
+        </FadeInWhenVisible>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {services.map((s, i) => (
+            <FadeInWhenVisible key={i} delay={i * 0.15}>
+              <motion.div
+                whileHover={{ y: -8 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+                className="group relative bg-dark-card border border-dark-border rounded-lg p-8 text-center hover:border-gold/40 transition-all duration-500 h-full flex flex-col"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg" />
+                <div className="relative flex-1 flex flex-col">
+                  <h3
+                    className="text-2xl font-semibold mb-3"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {s.name}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed text-sm mb-6 flex-1">
+                    {s.desc}
+                  </p>
+                  <div className="gold-line w-full mb-5" />
+                  <p
+                    className="text-3xl font-bold text-gold"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {s.price}
+                  </p>
+                </div>
+              </motion.div>
+            </FadeInWhenVisible>
+          ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── team ───────────────────────── */
+
+const barbers = [
+  {
+    name: 'James',
+    role: 'Senior Barber',
+    desc: 'Skin fade specialist with over 10 years of experience. Known for his razor-sharp precision and attention to detail.',
+    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    name: 'Ahmed',
+    role: 'Beard Specialist',
+    desc: 'Expert in beard shaping and classic gentleman cuts. Ahmed brings artistry and a meticulous eye to every appointment.',
+    img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+  },
+  {
+    name: 'Luca',
+    role: 'Creative Stylist',
+    desc: 'Focused on modern trends and creative precision styling. Luca keeps his craft fresh with the latest techniques from across Europe.',
+    img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+  },
+];
+
+function TeamSection() {
+  return (
+    <section id="team" className="relative py-24 sm:py-32">
+      <div className="max-w-6xl mx-auto px-5">
+        <FadeInWhenVisible>
+          <div className="text-center mb-16">
+            <span className="text-gold text-xs tracking-[0.3em] uppercase font-medium">
+              The Experts Behind the Chair
+            </span>
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Meet The Barbers
+            </h2>
+            <GoldDivider />
+          </div>
+        </FadeInWhenVisible>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {barbers.map((b, i) => (
+            <FadeInWhenVisible key={i} delay={i * 0.15}>
+              <motion.div
+                whileHover={{ y: -8 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+                className="group relative bg-dark-card border border-dark-border rounded-lg overflow-hidden hover:border-gold/40 transition-all duration-500 h-full"
+              >
+                <div className="relative h-64 overflow-hidden">
+                  <img
+                    src={b.img}
+                    alt={b.name}
+                    className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent" />
+                </div>
+                <div className="p-6 text-center">
+                  <h3
+                    className="text-2xl font-semibold mb-1"
+                    style={{ fontFamily: 'var(--font-display)' }}
+                  >
+                    {b.name}
+                  </h3>
+                  <p className="text-gold text-xs tracking-[0.2em] uppercase mb-3">
+                    {b.role}
+                  </p>
+                  <p className="text-gray-400 leading-relaxed text-sm">{b.desc}</p>
+                </div>
+              </motion.div>
+            </FadeInWhenVisible>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────── gallery banner ─────────────── */
+
+function GalleryBanner() {
+  return (
+    <section className="relative py-20 sm:py-28 overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-fixed"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1920&q=80')",
+        }}
+      />
+      <div className="absolute inset-0 bg-black/70" />
+
+      <div className="relative max-w-3xl mx-auto text-center px-5">
+        <FadeInWhenVisible>
+          <p
+            className="text-2xl sm:text-3xl md:text-4xl italic text-white leading-relaxed"
+            style={{ fontFamily: 'var(--font-accent)' }}
+          >
+            "A great haircut doesn't just change your look — it changes how you
+            carry yourself. That's what we deliver, every single time."
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="w-5 h-5 text-gold fill-gold" />
+            ))}
+          </div>
+          <p className="text-gray-400 mt-3 text-sm tracking-wider uppercase">
+            5-Star Rated on Google
+          </p>
+        </FadeInWhenVisible>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── contact + email form ───────────────────────── */
+
+function ContactSection() {
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    // mailto fallback
+    const subject = encodeURIComponent(`Booking Enquiry from ${formData.name}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`
+    );
+    window.location.href = `mailto:info@sharpedgebarbers.co.uk?subject=${subject}&body=${body}`;
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 4000);
+  };
+
+  return (
+    <section id="contact" className="relative py-24 sm:py-32">
+      <div className="absolute inset-0 bg-dark-lighter" />
+
+      <div className="relative max-w-6xl mx-auto px-5">
+        <FadeInWhenVisible>
+          <div className="text-center mb-16">
+            <span className="text-gold text-xs tracking-[0.3em] uppercase font-medium">
+              Get In Touch
+            </span>
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Visit Us or Drop a Message
+            </h2>
+            <GoldDivider />
+          </div>
+        </FadeInWhenVisible>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+          {/* Info Side */}
+          <FadeInWhenVisible direction="left">
+            <div className="space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center text-gold">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-lg mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+                    Our Location
+                  </h4>
+                  <p className="text-gray-400 text-sm">
+                    123 Camden High Street, London, NW1 7JR
+                  </p>
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=123+Camden+High+Street+London+NW1+7JR"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold text-sm hover:underline mt-1 inline-block"
+                  >
+                    View on Google Maps →
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center text-gold">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-lg mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+                    Opening Hours
+                  </h4>
+                  <p className="text-gray-400 text-sm">Monday – Saturday: 9am – 7pm</p>
+                  <p className="text-gray-400 text-sm">Sunday: 10am – 4pm</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center text-gold">
+                  <Phone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-lg mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+                    Call Us
+                  </h4>
+                  <a
+                    href="tel:02079460958"
+                    className="text-gray-400 text-sm hover:text-gold transition-colors"
+                  >
+                    020 7946 0958
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center text-gold">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-lg mb-1" style={{ fontFamily: 'var(--font-display)' }}>
+                    Email Us
+                  </h4>
+                  <a
+                    href="mailto:info@sharpedgebarbers.co.uk"
+                    className="text-gray-400 text-sm hover:text-gold transition-colors"
+                  >
+                    info@sharpedgebarbers.co.uk
+                  </a>
+                </div>
+              </div>
+            </div>
+          </FadeInWhenVisible>
+
+          {/* Email Form Side */}
+          <FadeInWhenVisible direction="right">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-dark-card border border-dark-border rounded-lg p-6 sm:p-8 space-y-5"
+            >
+              <h3
+                className="text-xl font-semibold mb-2"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Send Us a Message
+              </h3>
+              <p className="text-gray-400 text-sm mb-4">
+                Have a question or want to book? Drop us a line and we'll get
+                back to you promptly.
+              </p>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-1 tracking-wide">
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full bg-dark border border-dark-border rounded-sm px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-gold transition-colors duration-300"
+                  placeholder="John Smith"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-1 tracking-wide">
+                  Your Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full bg-dark border border-dark-border rounded-sm px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-gold transition-colors duration-300"
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-gray-300 mb-1 tracking-wide">
+                  Message
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={formData.message}
+                  onChange={(e) =>
+                    setFormData({ ...formData, message: e.target.value })
+                  }
+                  className="w-full bg-dark border border-dark-border rounded-sm px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-gold transition-colors duration-300 resize-none"
+                  placeholder="I'd like to book a skin fade for Saturday..."
+                />
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gold text-dark font-semibold text-sm tracking-widest uppercase rounded-sm hover:bg-gold-light transition-colors duration-300"
+              >
+                {submitted ? (
+                  'Opening Your Email Client...'
+                ) : (
+                  <>
+                    Send Message <Send className="w-4 h-4" />
+                  </>
+                )}
+              </motion.button>
+            </form>
+          </FadeInWhenVisible>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── footer ───────────────────────── */
+
+function Footer() {
+  return (
+    <footer className="border-t border-dark-border">
+      <div className="max-w-6xl mx-auto px-5 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-2">
+          <Scissors className="w-5 h-5 text-gold" />
+          <span
+            className="text-lg font-bold tracking-wider"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            SHARP EDGE
+          </span>
+        </div>
+
+        <p className="text-gray-500 text-sm text-center">
+          © 2026 Sharp Edge Barbers | Camden, London. All rights reserved.
+        </p>
+
+        <div className="flex items-center gap-4">
+          <a
+            href="#"
+            className="w-10 h-10 rounded-full border border-dark-border flex items-center justify-center text-gray-400 hover:text-gold hover:border-gold transition-all duration-300"
+          >
+            <Instagram className="w-4 h-4" />
+          </a>
+          <a
+            href="tel:02079460958"
+            className="w-10 h-10 rounded-full border border-dark-border flex items-center justify-center text-gray-400 hover:text-gold hover:border-gold transition-all duration-300"
+          >
+            <Phone className="w-4 h-4" />
+          </a>
+          <a
+            href="mailto:info@sharpedgebarbers.co.uk"
+            className="w-10 h-10 rounded-full border border-dark-border flex items-center justify-center text-gray-400 hover:text-gold hover:border-gold transition-all duration-300"
+          >
+            <Mail className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ───────────────────────── app ───────────────────────── */
+
+export default function App() {
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+      <Hero />
+      <WhySection />
+      <ServicesSection />
+      <TeamSection />
+      <GalleryBanner />
+      <ContactSection />
+      <Footer />
     </div>
-</div>
+  );
+}
 
-<div class="section">
-    <h2>Meet The Barbers</h2>
-    <div class="grid">
-        <div class="card">
-            <h3>James</h3>
-            <p>Skin fade specialist with over 10 years of experience.</p>
-        </div>
-        <div class="card">
-            <h3>Ahmed</h3>
-            <p>Expert in beard shaping and classic gentleman cuts.</p>
-        </div>
-        <div class="card">
-            <h3>Luca</h3>
-            <p>Creative stylist focused on precision and modern styles.</p>
-        </div>
-    </div>
-</div>
-
-<div class="section contact" id="contact">
-    <h2>Visit Us</h2>
-    <p><strong>123 Camden High Street, London, NW1 7JR</strong></p>
-    <p>Mon – Sat: 9am – 7pm</p>
-    <p>Sunday: 10am – 4pm</p>
-    <p>Call us: 020 7946 0958</p>
-    <a class="button" href="https://www.google.com/maps/search/?api=1&query=123+Camden+High+Street+London+NW1+7JR" target="_blank">View on Google Maps</a>
-</div>
-
-<footer>
-    © 2026 Sharp Edge Barbers | London
-</footer>
 
 </body>
 </html>
